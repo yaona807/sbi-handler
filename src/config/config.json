@@ -1,0 +1,20 @@
+{
+    "url": {
+        "home": "https://site3.sbisec.co.jp/ETGate/"
+    },
+    "viewport": {
+        "width": 1920,
+        "height": 1080
+    },
+    "selector": {
+        "login": {
+            "userName": "input[name=\"user_id\"]",
+            "password": "input[name=\"user_password\"]",
+            "loginButton": "input[name=\"ACT_login\""
+        },
+        "portfolio": {
+            "button": "a ::-p-text(口座管理)",
+            "allTable": "table[border=\"0\"][cellspacing=\"1\"][cellpadding=\"1\"]"
+        }
+    }
+}

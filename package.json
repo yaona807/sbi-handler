@@ -1,0 +1,23 @@
+{
+  "name": "sbi-handler",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx tsc",
+    "build:watch": "npx tsc --watch"
+  },
+  "keywords": [],
+  "author": "Yaona",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^23.10.4"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.68",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
+}
