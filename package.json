@@ -6,8 +6,8 @@
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx tsc",
-    "build:watch": "npx tsc --watch"
+    "build": "npx tsc -d",
+    "build:watch": "npx tsc -d --watch"
   },
   "keywords": [],
   "author": "Yaona",
