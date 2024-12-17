@@ -39,7 +39,7 @@ export class SBI {
         ]).then(elems => elems.filter(elem => elem).length === 0);
     }
     async #init(): Promise<void> {
-        this.#browser = this.#browser || await puppeteer.launch({headless: false});
+        this.#browser = this.#browser || await puppeteer.launch({headless: 'shell'});
         this.#page = this.#page || await this.#browser.newPage();
 
         await this.#move(config.url.home);

@@ -148,7 +148,7 @@ _SBI_browser = new WeakMap(), _SBI_page = new WeakMap(), _SBI_instances = new We
         __classPrivateFieldGet(this, _SBI_page, "f").$(config_json_1.default.selector.login.password)
     ]).then(elems => elems.filter(elem => elem).length === 0);
 }, _SBI_init = async function _SBI_init() {
-    __classPrivateFieldSet(this, _SBI_browser, __classPrivateFieldGet(this, _SBI_browser, "f") || await puppeteer_1.default.launch({ headless: false }), "f");
+    __classPrivateFieldSet(this, _SBI_browser, __classPrivateFieldGet(this, _SBI_browser, "f") || await puppeteer_1.default.launch({ headless: 'shell' }), "f");
     __classPrivateFieldSet(this, _SBI_page, __classPrivateFieldGet(this, _SBI_page, "f") || await __classPrivateFieldGet(this, _SBI_browser, "f").newPage(), "f");
     await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_move).call(this, config_json_1.default.url.home);
     if (await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_isLogin).call(this)) {
