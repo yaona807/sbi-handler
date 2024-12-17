@@ -13,7 +13,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _SBI_instances, _SBI_browser, _SBI_page, _SBI_isLogin, _SBI_init, _SBI_move, _SBI_clickMove;
+var _SBI_instances, _SBI_browser, _SBI_page, _SBI_isLogin, _SBI_init, _SBI_move, _SBI_clickAnchor;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SBI = void 0;
 const puppeteer_1 = __importDefault(require("puppeteer"));
@@ -28,6 +28,7 @@ class SBI {
         this.userName = userName;
         this.password = password;
         __classPrivateFieldSet(this, _SBI_browser, null, "f");
+        __classPrivateFieldSet(this, _SBI_page, null, "f");
     }
     async getPortfolio() {
         await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_init).call(this);
@@ -35,7 +36,7 @@ class SBI {
             throw new Error('Unexpected error');
         }
         await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_move).call(this, config_json_1.default.url.home);
-        await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_clickMove).call(this, config_json_1.default.selector.portfolio.button);
+        await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_clickAnchor).call(this, config_json_1.default.selector.portfolio.button);
         return await __classPrivateFieldGet(this, _SBI_page, "f").evaluate(allTableSelector => {
             const portfolio = {};
             try {
@@ -77,6 +78,59 @@ class SBI {
             return portfolio;
         }, config_json_1.default.selector.portfolio.allTable);
     }
+    async getIPO() {
+        await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_init).call(this);
+        if (!__classPrivateFieldGet(this, _SBI_page, "f")) {
+            throw new Error('Unexpected error');
+        }
+        await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_move).call(this, config_json_1.default.url.home);
+        await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_clickAnchor).call(this, config_json_1.default.selector.ipo.ipoAnchor);
+        return await __classPrivateFieldGet(this, _SBI_page, "f").evaluate((header) => {
+            const [ipoHeaderElem, poHeaderElem] = document.querySelectorAll(header);
+            // IPOヘッダーとPOヘッダーの間にある要素を取得
+            const targetElems = [];
+            let nextElem = ipoHeaderElem?.nextElementSibling;
+            while (nextElem && nextElem !== poHeaderElem) {
+                targetElems.push(nextElem);
+                nextElem = nextElem.nextElementSibling;
+            }
+            // 不要な要素を除外して、テキストを抽出
+            const th_list = targetElems.map(targetElem => Array.from(targetElem.querySelectorAll('th'))
+                .map(th => th.textContent))
+                .flat()
+                .filter(text => !/目論見書/.test(text || ''));
+            const td_list = targetElems.map(targetElem => Array.from(targetElem.querySelectorAll('th + td'))
+                .map(td => td.textContent))
+                .flat();
+            const ipoInfo = {};
+            const total = th_list.length - td_list.length;
+            const th_num = td_list.length / total;
+            let current = {};
+            th_list.forEach((th, th_index) => {
+                if (!th) {
+                    return;
+                }
+                // 企業名の場合は初期化
+                if (th_index % (th_num + 1) === 0) {
+                    ipoInfo[th] = {};
+                    current = ipoInfo[th];
+                    return;
+                }
+                if (Object.keys(current).length < th_num) {
+                    current[th] = td_list.shift() || '';
+                }
+                else {
+                    ipoInfo[th] = {};
+                    current = ipoInfo[th];
+                }
+            });
+            // 算出した合計値と異なる場合はUIが変更された可能性あり
+            if (Object.keys(ipoInfo).length !== total) {
+                throw new Error('UI structure has changed');
+            }
+            return ipoInfo;
+        }, config_json_1.default.selector.ipo.header);
+    }
     async close() {
         if (!__classPrivateFieldGet(this, _SBI_browser, "f")) {
             return;
@@ -103,7 +157,7 @@ _SBI_browser = new WeakMap(), _SBI_page = new WeakMap(), _SBI_instances = new We
     await __classPrivateFieldGet(this, _SBI_page, "f").setViewport({ width: config_json_1.default.viewport.width, height: config_json_1.default.viewport.height });
     await __classPrivateFieldGet(this, _SBI_page, "f").type(config_json_1.default.selector.login.userName, this.userName);
     await __classPrivateFieldGet(this, _SBI_page, "f").type(config_json_1.default.selector.login.password, this.password);
-    await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_clickMove).call(this, config_json_1.default.selector.login.loginButton);
+    await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_clickAnchor).call(this, config_json_1.default.selector.login.loginButton);
     if (!(await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_isLogin).call(this))) {
         throw new Error('Invalid userName or password');
     }
@@ -116,7 +170,7 @@ _SBI_browser = new WeakMap(), _SBI_page = new WeakMap(), _SBI_instances = new We
         waitUntil: ['load', 'networkidle0'],
     });
     return;
-}, _SBI_clickMove = async function _SBI_clickMove(selector) {
+}, _SBI_clickAnchor = async function _SBI_clickAnchor(selector) {
     if (!__classPrivateFieldGet(this, _SBI_page, "f")) {
         throw new Error('Unexpected error');
     }
