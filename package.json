@@ -1,7 +1,7 @@
 {
   "name": "sbi-handler",
-  "version": "0.0.1",
-  "description": "",
+  "version": "0.1.0",
+  "description": "This is a TypeScript/JavaScript library for scraping the SBI Securities website.",
   "main": "dist/index.js",
   "private": true,
   "scripts": {
