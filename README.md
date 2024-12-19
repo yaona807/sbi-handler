@@ -71,3 +71,29 @@ main();
 //   }
 // }
 ```
+
+### 株価情報の取得
+指定された銘柄コードの株価情報を取得します。
+```ts
+import SBIHander from "sbi-handler";
+
+async function main() {
+    const sbi = new SBIHander('userName', 'password');
+
+    const stockData = await sbi.getStockData('xxxx');
+    console.log(stockData);
+    await sbi.close();
+};
+
+main();
+// {
+//   '現在値': 1050,
+//   '始値': 1000,
+//   '前日終値': 1010,
+//   '高値': 1100,
+//   '出来高': 3839210,
+//   '安値': 1000,
+//   '売買代金': 10000000,
+//   '銘柄名': 'XXXXXXXX'
+// }
+```
