@@ -1,11 +1,4 @@
-type PortfolioSecurity = {
-    [K: string]: {
-        [K: string]: number;
-    };
-};
-type Portfolio = {
-    [K: string]: PortfolioSecurity;
-};
+import type { Portfolio, StockData } from '../types/sbi';
 export declare class SBI {
     #private;
     userName: string;
@@ -13,6 +6,6 @@ export declare class SBI {
     constructor(userName: string, password: string);
     getPortfolio(): Promise<Portfolio>;
     getIPO(): Promise<Object>;
+    getStockData(stockCode: string): Promise<StockData>;
     close(): Promise<void>;
 }
-export {};

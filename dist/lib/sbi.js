@@ -37,16 +37,16 @@ class SBI {
         }
         await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_move).call(this, config_json_1.default.url.home);
         await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_clickAnchor).call(this, config_json_1.default.selector.portfolio.button);
-        return await __classPrivateFieldGet(this, _SBI_page, "f").evaluate(allTableSelector => {
+        return await __classPrivateFieldGet(this, _SBI_page, "f").evaluate((allTableSelector) => {
             const portfolio = {};
             try {
-                document.querySelectorAll(allTableSelector).forEach(table => {
+                document.querySelectorAll(allTableSelector).forEach((table) => {
                     let portfolioSecurity = {};
                     let labels = [];
                     let current = portfolioSecurity;
-                    const trs = table.querySelectorAll("tr");
+                    const trs = table.querySelectorAll('tr');
                     trs.forEach((tr, trIndex) => {
-                        const tds = tr.querySelectorAll("td");
+                        const tds = tr.querySelectorAll('td');
                         tds.forEach((td, tdIndex) => {
                             if (trIndex === 0 && td.textContent) {
                                 // 有価証券の種類
@@ -95,12 +95,12 @@ class SBI {
                 nextElem = nextElem.nextElementSibling;
             }
             // 不要な要素を除外して、テキストを抽出
-            const th_list = targetElems.map(targetElem => Array.from(targetElem.querySelectorAll('th'))
-                .map(th => th.textContent))
+            const th_list = targetElems
+                .map((targetElem) => Array.from(targetElem.querySelectorAll('th')).map((th) => th.textContent))
                 .flat()
-                .filter(text => !/目論見書/.test(text || ''));
-            const td_list = targetElems.map(targetElem => Array.from(targetElem.querySelectorAll('th + td'))
-                .map(td => td.textContent))
+                .filter((text) => !/目論見書/.test(text || ''));
+            const td_list = targetElems
+                .map((targetElem) => Array.from(targetElem.querySelectorAll('th + td')).map((td) => td.textContent))
                 .flat();
             const ipoInfo = {};
             const total = th_list.length - td_list.length;
@@ -131,6 +131,69 @@ class SBI {
             return ipoInfo;
         }, config_json_1.default.selector.ipo.header);
     }
+    async getStockData(stockCode) {
+        // 銘柄コードの確認
+        // ※厳密な仕様の確認は不要で、英数字4文字かの最低限の判定だけ実施
+        if (!/^[!-~]{4}$/.test(stockCode)) {
+            throw new Error('Invalid stockCode');
+        }
+        await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_init).call(this);
+        if (!__classPrivateFieldGet(this, _SBI_page, "f")) {
+            throw new Error('Unexpected error');
+        }
+        await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_move).call(this, config_json_1.default.url.home);
+        // 銘柄検索
+        await __classPrivateFieldGet(this, _SBI_page, "f").type(config_json_1.default.selector.stock.searchInput, stockCode);
+        await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_clickAnchor).call(this, config_json_1.default.selector.stock.searchButton);
+        // 株価情報の抽出
+        return await __classPrivateFieldGet(this, _SBI_page, "f").evaluate((stockDataSelector) => {
+            const stockName = document.querySelector(stockDataSelector.name)?.textContent?.trim();
+            const currentValue = document
+                .querySelector(stockDataSelector.status)
+                ?.textContent?.trim()
+                .split('\n')[1]
+                ?.trim()
+                ?.replace(',', '')
+                ?.match(/\d{0,}\.*\d{0,}/)
+                ?.shift();
+            const stockDataList = document
+                .querySelector(stockDataSelector.stockDataTable)
+                ?.textContent?.trim()
+                .split('\n')
+                .filter((d) => !!d);
+            if (typeof stockName !== 'string' ||
+                typeof currentValue !== 'string' ||
+                !(stockDataList instanceof Array) ||
+                stockDataList.length === 0) {
+                throw new Error('UI structure has changed');
+            }
+            const stockData = {
+                現在値: currentValue,
+            };
+            for (let i = 0; i < stockDataList.length; i += 2) {
+                const key = stockDataList[i];
+                const value = stockDataList[i + 1];
+                if (key == null || value == null) {
+                    continue;
+                }
+                // valueから先頭の数値部分のみを抽出
+                stockData[key] = value.replace(/\s*\((\d{0,}|:|\/)*\)/g, '');
+            }
+            // 数値文字列をNumber型へ変換
+            Object.keys(stockData).forEach((key) => {
+                if (typeof stockData[key] !== 'string') {
+                    return;
+                }
+                stockData[key] = Number(stockData[key]
+                    .replace(/,/g, '')
+                    .replace(/\s*\(千円\)/, '000')
+                    .replace(/\s*\(万円\)/, '0000'));
+            });
+            // 数値情報以外を追加
+            stockData['銘柄名'] = stockName;
+            return stockData;
+        }, config_json_1.default.selector.stock.stockData);
+    }
     async close() {
         if (!__classPrivateFieldGet(this, _SBI_browser, "f")) {
             return;
@@ -145,11 +208,11 @@ _SBI_browser = new WeakMap(), _SBI_page = new WeakMap(), _SBI_instances = new We
     }
     return await Promise.all([
         __classPrivateFieldGet(this, _SBI_page, "f").$(config_json_1.default.selector.login.userName),
-        __classPrivateFieldGet(this, _SBI_page, "f").$(config_json_1.default.selector.login.password)
-    ]).then(elems => elems.filter(elem => elem).length === 0);
+        __classPrivateFieldGet(this, _SBI_page, "f").$(config_json_1.default.selector.login.password),
+    ]).then((elems) => elems.filter((elem) => elem).length === 0);
 }, _SBI_init = async function _SBI_init() {
-    __classPrivateFieldSet(this, _SBI_browser, __classPrivateFieldGet(this, _SBI_browser, "f") || await puppeteer_1.default.launch({ headless: 'shell' }), "f");
-    __classPrivateFieldSet(this, _SBI_page, __classPrivateFieldGet(this, _SBI_page, "f") || await __classPrivateFieldGet(this, _SBI_browser, "f").newPage(), "f");
+    __classPrivateFieldSet(this, _SBI_browser, __classPrivateFieldGet(this, _SBI_browser, "f") || (await puppeteer_1.default.launch({ headless: 'shell' })), "f");
+    __classPrivateFieldSet(this, _SBI_page, __classPrivateFieldGet(this, _SBI_page, "f") || (await __classPrivateFieldGet(this, _SBI_browser, "f").newPage()), "f");
     await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_move).call(this, config_json_1.default.url.home);
     if (await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_isLogin).call(this)) {
         return;
@@ -176,7 +239,7 @@ _SBI_browser = new WeakMap(), _SBI_page = new WeakMap(), _SBI_instances = new We
     }
     await Promise.all([
         __classPrivateFieldGet(this, _SBI_page, "f").waitForNavigation({ waitUntil: ['load', 'networkidle0'] }),
-        __classPrivateFieldGet(this, _SBI_page, "f").locator(selector).click()
+        __classPrivateFieldGet(this, _SBI_page, "f").locator(selector).click(),
     ]);
     return;
 };

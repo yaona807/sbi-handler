@@ -19,6 +19,15 @@
         "ipo": {
             "ipoAnchor": "div[class=\"footer01M\"]:nth-of-type(2) li:nth-child(4) > a",
             "header": "div[class=\"mgt30\"]"
+        },
+        "stock": {
+            "searchInput": "input[id=top_stock_sec]",
+            "searchButton": "a > img[title=\"株価検索\"]",
+            "stockData": {
+                "name": "h3 > span[class=\"fxx01\"]",
+                "status": "div[class=\"kabuNowStatus\"]",
+                "stockDataTable": "table[summary=\"株価データ\"]"
+            }
         }
     }
 }
