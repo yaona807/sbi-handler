@@ -1,4 +1,4 @@
-import type { Portfolio, StockData } from '../types/sbi';
+import type { Portfolio, StockData, Order } from '../types/sbi';
 export declare class SBI {
     #private;
     userName: string;
@@ -7,5 +7,6 @@ export declare class SBI {
     getPortfolio(): Promise<Portfolio>;
     getIPO(): Promise<Object>;
     getStockData(stockCode: string): Promise<StockData>;
+    orderStock(order: Order): Promise<void>;
     close(): Promise<void>;
 }

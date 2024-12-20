@@ -1,6 +1,7 @@
 import puppeteer, { Browser, Page } from 'puppeteer';
 import config from '../config/config.json';
-import type { Portfolio, PortfolioSecurity, StockData, IpoInfo } from '../types/sbi';
+import type { Portfolio, PortfolioSecurity, StockData, IpoInfo, Order } from '../types/sbi';
+import { validateOrder, validateStockCode } from './utils';
 
 export class SBI {
 	userName: string = '';
@@ -187,9 +188,7 @@ export class SBI {
 		}, config.selector.ipo.header);
 	}
 	async getStockData(stockCode: string): Promise<StockData> {
-		// 銘柄コードの確認
-		// ※厳密な仕様の確認は不要で、英数字4文字かの最低限の判定だけ実施
-		if (!/^[!-~]{4}$/.test(stockCode)) {
+		if (!validateStockCode(stockCode)) {
 			throw new Error('Invalid stockCode');
 		}
 
@@ -263,6 +262,69 @@ export class SBI {
 
 			return stockData;
 		}, config.selector.stock.stockData);
+	}
+	async orderStock(order: Order): Promise<void> {
+		if (!validateOrder(order)) {
+			throw new Error('Invalid order');
+		}
+
+		await this.#init();
+
+		if (!this.#page) {
+			throw new Error('Unexpected error');
+		}
+
+		await this.#move(config.url.home);
+
+		await this.#clickAnchor(config.selector.stock.order.orderButton);
+
+		try {
+			// 取引
+			await this.#page.locator(config.selector.stock.order.tradeType[order.tradeType]).click();
+
+			// 銘柄コード
+			await this.#page.type(config.selector.stock.order.stockCode, order.stockCode);
+
+			// 市場
+			if (order.market != null && order.market !== 'SOR') {
+				await this.#page.select(config.selector.stock.order.market, order.market);
+			}
+
+			// 株数
+			await this.#page.type(config.selector.stock.order.quantity, String(order.quantity));
+
+			// 価格
+			switch (order.orderType) {
+				case 'limit':
+					await this.#page.locator(config.selector.stock.order.limitCheckbox).click();
+					await this.#page.type(config.selector.stock.order.price, String(order.price as number));
+					break;
+				case 'market':
+					await this.#page.locator(config.selector.stock.order.marketCheckbox).click();
+					break;
+				case 'stop':
+					await this.#page.locator(config.selector.stock.order.stopCheckbox).click();
+					await this.#page.locator(config.selector.stock.order.triggerOrder).click();
+					break;
+			}
+
+			// 期間
+			await this.#page.locator(config.selector.stock.order[order.validity || 'dayOnly']).click();
+
+			// 預り区分
+			await this.#page.locator(config.selector.stock.order.custodyType[order.custodyType]).click();
+
+			// 取引パスワード
+			await this.#page.type(config.selector.stock.order.password, order.tradePassword);
+
+			// 注文確認
+			await this.#clickAnchor(config.selector.stock.order.submit);
+
+			// 申し込み
+			await this.#page.locator(config.selector.stock.order.orderPlacement).click();
+		} catch {
+			throw new Error('UI structure has changed');
+		}
 	}
 	async close(): Promise<void> {
 		if (!this.#browser) {

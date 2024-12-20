@@ -27,6 +27,30 @@
                 "name": "h3 > span[class=\"fxx01\"]",
                 "status": "div[class=\"kabuNowStatus\"]",
                 "stockDataTable": "table[summary=\"株価データ\"]"
+            },
+            "order": {
+                "orderButton": "a > img[title=\"取引\"]",
+                "tradeType": {
+                    "buy": "input[id=\"genK\"]",
+                    "sell": "input[id=\"genU\"]"
+                },
+                "stockCode": "input[name=\"stock_sec_code\"]",
+                "market": "select[id=\"input_market\"]",
+                "quantity": "input[name=\"input_quantity\"]",
+                "limitCheckbox": "td[id=\"gsn0\"] input[name=\"in_sasinari_kbn\"]",
+                "price": "input[name=\"input_price\"]",
+                "marketCheckbox": "td[id=\"gsn1\"] input[name=\"in_sasinari_kbn\"]",
+                "stopCheckbox": "td[id=\"gsn2\"] input[name=\"in_sasinari_kbn\"]",
+                "triggerPrice": "input[name=\"input_trigger_price\"]",
+                "triggerOrder": "input[name=\"gsn_sasinari_kbn\"][value=\"N\"]",
+                "dayOnly": "input[name=\"selected_limit_in\"][value=\"this_day\"]",
+                "custodyType": {
+                    "specific": "input[name=\"hitokutei_trade_kbn\"][value=\"0\"]",
+                    "general": "input[name=\"hitokutei_trade_kbn\"][value=\"1\"]"
+                },
+                "password": "input[type=\"password\"][name=\"trade_pwd\"]",
+                "submit": "a[id=\"botton1\"] > img",
+                "orderPlacement": "a > img[title=\"注文発注\"]"
             }
         }
     }
