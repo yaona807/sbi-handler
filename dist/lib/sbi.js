@@ -18,6 +18,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SBI = void 0;
 const puppeteer_1 = __importDefault(require("puppeteer"));
 const config_json_1 = __importDefault(require("../config/config.json"));
+const utils_1 = require("./utils");
 class SBI {
     constructor(userName, password) {
         _SBI_instances.add(this);
@@ -132,9 +133,7 @@ class SBI {
         }, config_json_1.default.selector.ipo.header);
     }
     async getStockData(stockCode) {
-        // 銘柄コードの確認
-        // ※厳密な仕様の確認は不要で、英数字4文字かの最低限の判定だけ実施
-        if (!/^[!-~]{4}$/.test(stockCode)) {
+        if (!(0, utils_1.validateStockCode)(stockCode)) {
             throw new Error('Invalid stockCode');
         }
         await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_init).call(this);
@@ -193,6 +192,56 @@ class SBI {
             stockData['銘柄名'] = stockName;
             return stockData;
         }, config_json_1.default.selector.stock.stockData);
+    }
+    async orderStock(order) {
+        if (!(0, utils_1.validateOrder)(order)) {
+            throw new Error('Invalid order');
+        }
+        await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_init).call(this);
+        if (!__classPrivateFieldGet(this, _SBI_page, "f")) {
+            throw new Error('Unexpected error');
+        }
+        await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_move).call(this, config_json_1.default.url.home);
+        await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_clickAnchor).call(this, config_json_1.default.selector.stock.order.orderButton);
+        try {
+            // 取引
+            await __classPrivateFieldGet(this, _SBI_page, "f").locator(config_json_1.default.selector.stock.order.tradeType[order.tradeType]).click();
+            // 銘柄コード
+            await __classPrivateFieldGet(this, _SBI_page, "f").type(config_json_1.default.selector.stock.order.stockCode, order.stockCode);
+            // 市場
+            if (order.market != null && order.market !== 'SOR') {
+                await __classPrivateFieldGet(this, _SBI_page, "f").select(config_json_1.default.selector.stock.order.market, order.market);
+            }
+            // 株数
+            await __classPrivateFieldGet(this, _SBI_page, "f").type(config_json_1.default.selector.stock.order.quantity, String(order.quantity));
+            // 価格
+            switch (order.orderType) {
+                case 'limit':
+                    await __classPrivateFieldGet(this, _SBI_page, "f").locator(config_json_1.default.selector.stock.order.limitCheckbox).click();
+                    await __classPrivateFieldGet(this, _SBI_page, "f").type(config_json_1.default.selector.stock.order.price, String(order.price));
+                    break;
+                case 'market':
+                    await __classPrivateFieldGet(this, _SBI_page, "f").locator(config_json_1.default.selector.stock.order.marketCheckbox).click();
+                    break;
+                case 'stop':
+                    await __classPrivateFieldGet(this, _SBI_page, "f").locator(config_json_1.default.selector.stock.order.stopCheckbox).click();
+                    await __classPrivateFieldGet(this, _SBI_page, "f").locator(config_json_1.default.selector.stock.order.triggerOrder).click();
+                    break;
+            }
+            // 期間
+            await __classPrivateFieldGet(this, _SBI_page, "f").locator(config_json_1.default.selector.stock.order[order.validity || 'dayOnly']).click();
+            // 預り区分
+            await __classPrivateFieldGet(this, _SBI_page, "f").locator(config_json_1.default.selector.stock.order.custodyType[order.custodyType]).click();
+            // 取引パスワード
+            await __classPrivateFieldGet(this, _SBI_page, "f").type(config_json_1.default.selector.stock.order.password, order.tradePassword);
+            // 注文確認
+            await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_clickAnchor).call(this, config_json_1.default.selector.stock.order.submit);
+            // 申し込み
+            await __classPrivateFieldGet(this, _SBI_page, "f").locator(config_json_1.default.selector.stock.order.orderPlacement).click();
+        }
+        catch {
+            throw new Error('UI structure has changed');
+        }
     }
     async close() {
         if (!__classPrivateFieldGet(this, _SBI_browser, "f")) {

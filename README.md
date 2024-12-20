@@ -97,3 +97,42 @@ main();
 //   '銘柄名': 'XXXXXXXX'
 // }
 ```
+
+### 株式を注文する
+指定された注文情報をもとに新規注文を発注します。
+```ts
+import SBIHander from "sbi-handler";
+
+async function main() {
+    const sbi = new SBIHander('userName', 'password');
+
+    const stockData = await sbi.orderStock({
+        // 市場
+        market: 'SOR', // 'TKY' | 'NGY' | 'FKO' | 'SPR' | 'SOR'
+        // 銘柄コード
+        stockCode: 'xxxx',
+        // 取引
+        // ※現物のみ
+        tradeType: 'buy', // 'buy' | 'sell'
+        // 株数
+        quantity: 100,
+        // 注文方法
+        // ※条件不可
+        orderType: 'limit', // 'limit' | 'market' | 'stop'
+        // 注文価格
+        // ※marketの場合は null | undefined
+        price: 1000,
+        // 預り区分
+        // ※特定預り or 一般預り
+        custodyType: 'specific', // 'specific' | 'general'
+        // 期間
+        // ※dayOnlyのみ
+        validity: 'dayOnly',
+        // 取引パスワード
+        tradePassword: 'xxxxxxxxxxxxxxxx',
+    });
+    await sbi.close();
+};
+
+main();
+```
