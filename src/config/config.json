@@ -52,6 +52,7 @@
                 "submit": "a[id=\"botton1\"] > img",
                 "orderPlacement": "a > img[title=\"注文発注\"]"
             }
-        }
+        },
+        "buyingPower": "div[class=\"seeds-wd-full\"] p[class~=\"seeds-font-bold\"]"
     }
 }

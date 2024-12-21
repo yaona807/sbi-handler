@@ -243,6 +243,20 @@ class SBI {
             throw new Error('UI structure has changed');
         }
     }
+    async getBuyingPower() {
+        await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_init).call(this);
+        if (!__classPrivateFieldGet(this, _SBI_page, "f")) {
+            throw new Error('Unexpected error');
+        }
+        await __classPrivateFieldGet(this, _SBI_instances, "m", _SBI_move).call(this, config_json_1.default.url.home);
+        return await __classPrivateFieldGet(this, _SBI_page, "f").evaluate((buyingPowerSelector) => {
+            const buyingPowerData = Array.from(document.querySelectorAll(buyingPowerSelector)).map((p) => (p.textContent || '').trim());
+            if (typeof buyingPowerData[1] !== 'string') {
+                throw new Error('UI structure has changed');
+            }
+            return Number(buyingPowerData[1].replace(/(,|円)/g, ''));
+        }, config_json_1.default.selector.buyingPower);
+    }
     async close() {
         if (!__classPrivateFieldGet(this, _SBI_browser, "f")) {
             return;
