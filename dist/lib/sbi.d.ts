@@ -8,5 +8,6 @@ export declare class SBI {
     getIPO(): Promise<Object>;
     getStockData(stockCode: string): Promise<StockData>;
     orderStock(order: Order): Promise<void>;
+    getBuyingPower(): Promise<number>;
     close(): Promise<void>;
 }
