@@ -136,3 +136,18 @@ async function main() {
 
 main();
 ```
+### 買付余力を取得する
+現在の買付余力を取得します。
+```ts
+import SBIHander from "sbi-handler";
+
+async function main() {
+    const sbi = new SBIHander('userName', 'password');
+
+    const buyingPower = await sbi.getBuyingPower();
+    console.log(buyingPower); // 1234567890
+    await sbi.close();
+};
+
+main();
+```

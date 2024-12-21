@@ -326,6 +326,27 @@ export class SBI {
 			throw new Error('UI structure has changed');
 		}
 	}
+	async getBuyingPower(): Promise<number> {
+		await this.#init();
+
+		if (!this.#page) {
+			throw new Error('Unexpected error');
+		}
+
+		await this.#move(config.url.home);
+
+		return await this.#page.evaluate((buyingPowerSelector) => {
+			const buyingPowerData = Array.from(document.querySelectorAll(buyingPowerSelector)).map((p) =>
+				(p.textContent || '').trim()
+			);
+
+			if (typeof buyingPowerData[1] !== 'string') {
+				throw new Error('UI structure has changed');
+			}
+
+			return Number(buyingPowerData[1].replace(/(,|円)/g, ''));
+		}, config.selector.buyingPower);
+	}
 	async close(): Promise<void> {
 		if (!this.#browser) {
 			return;
